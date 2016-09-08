@@ -51,13 +51,36 @@ namespace Ecommerce.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "UserID,UserName,FirstName,LastName,Phone,Photo,Address,DepartamentID,CityID,CompanyID")] User user)
+        public ActionResult Create(User user)
         {
             if (ModelState.IsValid)
             {
-                db.Users.Add(user);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                try
+                {
+                    db.Users.Add(user);
+                    db.SaveChanges();
+                    UsersHelper.CreateUserASP(user.UserName, "User");
+
+                    if (user.PhotoFile != null)
+                    {
+
+                        var folder = "~/Content/users";
+                        var file = string.Format("{0}_{1}_{2}.jpg", user.FullName, user.Company, user.UserID);
+                        var response = FilesHelper.UploadPhoto(user.PhotoFile, folder, file);
+                        if (response)
+                        {
+                            var pic = file;
+                            user.Photo = string.Format("{0}/{1}", folder, pic);
+                            db.Entry(user).State = EntityState.Modified;
+                            db.SaveChanges();
+                        }
+                    }
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.InnerException.InnerException.Message.ToString());
+                }
             }
 
             ViewBag.CityID = new SelectList(CombosHelper.GetCities(), "CityID", "Name", user.CityID);
@@ -90,12 +113,36 @@ namespace Ecommerce.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "UserID,UserName,FirstName,LastName,Phone,Photo,Address,DepartamentID,CityID,CompanyID")] User user)
+        public ActionResult Edit(User user)
         {
             if (ModelState.IsValid)
             {
                 db.Entry(user).State = EntityState.Modified;
                 db.SaveChanges();
+                try
+                {
+                    db.Users.Add(user);
+                    db.SaveChanges();
+                    if (user.PhotoFile != null)
+                    {
+
+                        var folder = "~/Content/users";
+                        var file = string.Format("{0}_{1}_{2}.jpg", user.FullName, user.Company, user.UserID);
+                        var response = FilesHelper.UploadPhoto(user.PhotoFile, folder, file);
+                        if (response)
+                        {
+                            var pic = file;
+                            user.Photo = string.Format("{0}/{1}", folder, pic);
+                            db.Entry(user).State = EntityState.Modified;
+                            db.SaveChanges();
+                        }
+                    }
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.InnerException.InnerException.Message.ToString());
+                }
                 return RedirectToAction("Index");
             }
             ViewBag.CityID = new SelectList(CombosHelper.GetCities(), "CityID", "Name", user.CityID);

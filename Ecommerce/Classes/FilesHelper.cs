@@ -11,7 +11,7 @@ namespace Ecommerce.Classes
 
         public static bool UploadPhoto(HttpPostedFileBase file, string folder, string name)
         {
-            if(file != null || 
+            if(file == null || 
                 string.IsNullOrEmpty(folder) ||
                 string.IsNullOrEmpty(name))
             {

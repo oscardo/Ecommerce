@@ -65,8 +65,11 @@
             @Html.DisplayFor(modelItem => item.Phone)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Photo)
-        </td>
+            @if (!string.IsNullOrEmpty(item.Photo))
+            {
+                <img src="@Url.Content(item.Photo)" alt="Image" style="width:100px;height:150px;max-width: 100%; height: auto;" />
+            }
+         </td>
         <td>
             @Html.DisplayFor(modelItem => item.Address)
         </td>

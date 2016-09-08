@@ -14,7 +14,7 @@ namespace Ecommerce.Models
 
         [Required(ErrorMessage = "The field {0} is required")]
         [MaxLength(50, ErrorMessage = "The field {0} must be maximum {1} Character length")]
-        [Display(Name = "City")]
+        [Display(Name = "Name")]
         [Index("City_Name_Index", 2, IsUnique = true)]
         public string Name { get; set; }
 
