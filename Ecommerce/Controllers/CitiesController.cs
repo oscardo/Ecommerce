@@ -7,6 +7,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using Ecommerce.Models;
+using Ecommerce.Classes;
 
 namespace Ecommerce.Controllers
 {
@@ -41,7 +42,7 @@ namespace Ecommerce.Controllers
         {
             //ViewBag.DepartamentID = new SelectList(db.Departaments, "DepartamentID", "Name");
             ViewBag.DepartamentID = new SelectList(
-                db.Departaments.OrderBy(D => D.Name),
+                CombosHelper.GetDepartament(),
                 "DepartamentID", "Name");
             return View();
         }
@@ -55,13 +56,29 @@ namespace Ecommerce.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Cities.Add(city);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                try
+                {
+                    db.Cities.Add(city);
+                    db.SaveChanges();
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    if (ex.InnerException != null &&
+                    ex.InnerException.InnerException != null &&
+                    ex.InnerException.InnerException.Message.Contains("REFERENCE"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Error al eliminar cualquier referencia");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, ex.Message);
+                    }
+                }
             }
 
             ViewBag.DepartamentID = new SelectList(
-                db.Departaments.OrderBy(D => D.Name), 
+                CombosHelper.GetDepartament(), 
                 "DepartamentID", "Name", 
                 city.DepartamentID);
             return View(city);
@@ -80,7 +97,7 @@ namespace Ecommerce.Controllers
                 return HttpNotFound();
             }
             ViewBag.DepartamentID = new SelectList(
-                db.Departaments.OrderBy(D => D.Name),
+                CombosHelper.GetDepartament(),
                 "DepartamentID", "Name",
                 city.DepartamentID);
             return View(city);
@@ -95,13 +112,30 @@ namespace Ecommerce.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(city).State = EntityState.Modified;
-                db.SaveChanges();
+                try
+                {
+                    db.Entry(city).State = EntityState.Modified;
+                    db.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    if (ex.InnerException != null &&
+                        ex.InnerException.InnerException != null &&
+                        ex.InnerException.InnerException.Message.Contains("REFERENCE"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Error al eliminar cualquier referencia");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, ex.Message);
+                    }
+
+                }
                 return RedirectToAction("Index");
             }
             //ViewBag.DepartamentID = new SelectList(db.Departaments, "DepartamentID", "Name", city.DepartamentID);
             ViewBag.DepartamentID = new SelectList(
-                db.Departaments.OrderBy(D => D.Name),
+                CombosHelper.GetDepartament(),
                 "DepartamentID", "Name",
                 city.DepartamentID);
             return View(city);
@@ -128,9 +162,26 @@ namespace Ecommerce.Controllers
         public ActionResult DeleteConfirmed(int id)
         {
             City city = db.Cities.Find(id);
-            db.Cities.Remove(city);
-            db.SaveChanges();
-            return RedirectToAction("Index");
+            try
+            {
+                db.Cities.Remove(city);
+                db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                if(ex.InnerException != null &&
+                    ex.InnerException.InnerException != null &&
+                    ex.InnerException.InnerException.Message.Contains("REFERENCE"))
+                {
+                    ModelState.AddModelError(string.Empty, "Error al eliminar cualquier referencia");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                }
+             }
+            return View(city);
         }
 
         protected override void Dispose(bool disposing)
