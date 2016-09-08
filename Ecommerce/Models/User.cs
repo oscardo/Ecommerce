@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,47 +7,67 @@ using System.Web;
 
 namespace Ecommerce.Models
 {
-    public class Company
+    public class User
     {
         [Key]
-        public int CompanyID { get; set; }
+        public int UserID { get; set; }
+
+        [Required(ErrorMessage = "The field {0} is required")]
+        [MaxLength(256, ErrorMessage = "The field {0} must be maximum {1} Character length")]
+        [Display(Name = "E-Mail")]
+        [Index("User_Name_Index", IsUnique = true)]
+        [DataType(DataType.EmailAddress)]
+        public string UserName { get; set; }
 
         [Required(ErrorMessage = "The field {0} is required")]
         [MaxLength(50, ErrorMessage = "The field {0} must be maximum {1} Character length")]
-        [Display(Name = "Company")]
-        [Index("Company_Name_Index", IsUnique = true)]
-        public string Name { get; set; }
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; }
+
+        [Required(ErrorMessage = "The field {0} is required")]
+        [MaxLength(50, ErrorMessage = "The field {0} must be maximum {1} Character length")]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; }
 
         [Required(ErrorMessage = "The field {0} is required")]
         [MaxLength(20, ErrorMessage = "The field {0} must be maximum {1} Character length")]
         [DataType(DataType.PhoneNumber)]
         public string Phone { get; set; }
 
+        [DataType(DataType.ImageUrl)]
+        public string Photo { get; set; }
+
         [Required(ErrorMessage = "The field {0} is required")]
         [MaxLength(100, ErrorMessage = "The field {0} must be maximum {1} Character length")]
         public string Address { get; set; }
 
-        [DataType(DataType.ImageUrl)]
-        public string Logo { get; set; }
-
+     
         [NotMapped]
-        public HttpPostedFileBase LogoFile { get; set; }
+        public HttpPostedFileBase PhotoFile { get; set; }
 
         [Required(ErrorMessage = "The field {0} is required")]
         [Range(1, double.MaxValue, ErrorMessage = "you must select a {0}")]
+        [Display(Name = "Departament")]
         public int DepartamentID { get; set; }
 
         [Required(ErrorMessage = "The field {0} is required")]
         [Range(1, double.MaxValue, ErrorMessage = "you must select a {0}")]
+        [Display(Name = "City")]
         public int CityID { get; set; }
+
+        [Required(ErrorMessage = "The field {0} is required")]
+        [Range(1, double.MaxValue, ErrorMessage = "you must select a {0}")]
+        [Display(Name = "Company")]
+        public int CompanyID { get; set; }
+
+        [Display(Name = "Full Name")]
+        public string FullName { get { return string.Format("{0} {1}", FirstName, LastName); } }
 
         //al declararse 1 Departament debemos declarar aqui es la clase virtual
         public virtual Departament Departament { get; set; }
         //al declararse 1 city debemos declarar aqui es la clase virtual
         public virtual City City { get; set; }
-
-        //al declarar 1 compania (company) en el sector de (n) Usuarios (Users)
-        public virtual ICollection<User> Users { get; set; }
-
+        //lado varios de User : (n) User -> Company (1)
+        public virtual Company Company { get; set; }
     }
 }

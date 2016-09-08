@@ -29,5 +29,8 @@ namespace Ecommerce.Models
         //al declarar 1 compania en el sector de (n) Companies
         public virtual ICollection<Company> Companies { get; set; }
 
+        //al declarar 1 ciudad (City) en el sector de (n) Usuarios (Users)
+        public virtual ICollection<User> Users { get; set; }
+        
     }
 }
