@@ -32,6 +32,9 @@ namespace Ecommerce.Models
 
         //una compania para (n) n'umero Tax
         public virtual Company Company { get; set; }
-        
+
+        //al declarar 1 tax (taxes) en el sector de (n) Product (Products)
+        public virtual ICollection<Product> Products { get; set; }
+
     }
 }

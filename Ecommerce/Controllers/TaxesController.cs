@@ -17,7 +17,13 @@ namespace Ecommerce.Controllers
         // GET: Taxes
         public ActionResult Index()
         {
-            var taxes = db.Taxes.Include(t => t.Company);
+            var user = db.Users.Where(u => u.UserName == User.Identity.Name.ToString()).FirstOrDefault();
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var taxes = db.Taxes.Where(t => t.CompanyID == user.CompanyID);
             return View(taxes.ToList());
         }
 

@@ -25,6 +25,8 @@ namespace Ecommerce.Models
         public string Description { get; set; }
         
         public virtual Company Company { get; set; }
-        
+
+        //al declarar 1 category (categories) en el sector de (n) Product (Products)
+        public virtual ICollection<Product> Products { get; set; }
     }
 }
