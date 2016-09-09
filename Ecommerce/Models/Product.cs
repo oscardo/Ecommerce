@@ -50,9 +50,11 @@ namespace Ecommerce.Models
         public decimal Price { get; set; }
 
         [DataType(DataType.ImageUrl)]
+        [Display(Name = "Image")]
         public string Image { get; set; }
 
         [NotMapped]
+        [Display(Name = "Image")]
         public HttpPostedFileBase ImageFile { get; set; }
 
         [DataType(DataType.MultilineText)]

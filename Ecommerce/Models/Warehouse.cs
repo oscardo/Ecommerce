@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,15 +7,21 @@ using System.Web;
 
 namespace Ecommerce.Models
 {
-    public class Company
+    public class Warehouse
     {
         [Key]
+        public int WarehouseID { get; set; }
+
+        [Required(ErrorMessage = "The field {0} is required")]
+        [Range(1, double.MaxValue, ErrorMessage = "you must select a {0}")]
+        [Display(Name = "Company")]
+        [Index("WarehouseID_Company_Name_Index", 1, IsUnique = true)]
         public int CompanyID { get; set; }
 
         [Required(ErrorMessage = "The field {0} is required")]
         [MaxLength(50, ErrorMessage = "The field {0} must be maximum {1} Character length")]
-        [Display(Name = "Company")]
-        [Index("Company_Name_Index", IsUnique = true)]
+        [Display(Name = "WareHouse")]
+        [Index("WarehouseID_Company_Name_Index", 2, IsUnique = true)]
         public string Name { get; set; }
 
         [Required(ErrorMessage = "The field {0} is required")]
@@ -28,40 +33,22 @@ namespace Ecommerce.Models
         [MaxLength(100, ErrorMessage = "The field {0} must be maximum {1} Character length")]
         public string Address { get; set; }
 
-        [DataType(DataType.ImageUrl)]
-        public string Logo { get; set; }
-
-        [NotMapped]
-        public HttpPostedFileBase LogoFile { get; set; }
-
         [Required(ErrorMessage = "The field {0} is required")]
         [Range(1, double.MaxValue, ErrorMessage = "you must select a {0}")]
+        [Display(Name = "Departament")]
         public int DepartamentID { get; set; }
 
         [Required(ErrorMessage = "The field {0} is required")]
         [Range(1, double.MaxValue, ErrorMessage = "you must select a {0}")]
+        [Display(Name = "City")]
         public int CityID { get; set; }
 
-        //al declararse 1 Departament debemos declarar aqui es la clase virtual
+        //al declararse 1 Departament debemos declarar aqui es la clase virtual, werehouse 
         public virtual Departament Departament { get; set; }
-        //al declararse 1 city debemos declarar aqui es la clase virtual
+        //al declararse 1 city debemos declarar aqui es la clase virtual, werehouse 
         public virtual City City { get; set; }
-
-        //al declarar 1 compania (company) en el sector de (n) Usuarios (Users)
-        public virtual ICollection<User> Users { get; set; }
-
-        //al declarar 1 compania (company) en el sector de (n) Category (Categories)
-        public virtual ICollection<Category> Categories { get; set; }
-
-        //al declarar 1 compania (company) en el sector de (n) Tax (Taxes)
-        public virtual ICollection<Tax> Taxes { get; set; }
-
-        //al declarar 1 compania (company) en el sector de (n) Product (Products)
-        public virtual ICollection<Product> Products { get; set; }
-        
-        //al declarar 1 compania (company) en el sector de (n) WareHouse (Products)
-        public virtual ICollection<Warehouse> Warehouses { get; set; }
-
+        //lado varios de User : (n) WareHouse -> Company (1)
+        public virtual Company Company { get; set; }
 
     }
 }

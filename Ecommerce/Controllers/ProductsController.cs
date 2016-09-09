@@ -7,6 +7,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using Ecommerce.Models;
+using Ecommerce.Classes;
 
 namespace Ecommerce.Controllers
 {
@@ -17,7 +18,14 @@ namespace Ecommerce.Controllers
         // GET: Products
         public ActionResult Index()
         {
-            var products = db.Products.Include(p => p.Category).Include(p => p.Company).Include(p => p.Tax);
+            var user = db.Users
+                .Where(u => u.UserName == User.Identity.Name.ToString())
+                .FirstOrDefault();
+
+            var products = db.Products
+                .Include(p => p.Category)
+                .Include(p => p.Tax)
+                .Where(p => p.CompanyID == user.CompanyID);
             return View(products.ToList());
         }
 
@@ -28,7 +36,7 @@ namespace Ecommerce.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Product product = db.Products.Find(id);
+            var product = db.Products.Find(id);
             if (product == null)
             {
                 return HttpNotFound();
@@ -39,10 +47,12 @@ namespace Ecommerce.Controllers
         // GET: Products/Create
         public ActionResult Create()
         {
-            ViewBag.CategoryID = new SelectList(db.Categories, "CategoryID", "Description");
-            ViewBag.CompanyID = new SelectList(db.Companies, "CompanyID", "Name");
-            ViewBag.TaxID = new SelectList(db.Taxes, "TaxID", "Description");
-            return View();
+            User user = Users();
+
+            ViewBag.CategoryID = new SelectList(CombosHelper.GetCategories(user.CompanyID), "CategoryID", "Description");
+            ViewBag.TaxID = new SelectList(CombosHelper.GetTaxes(user.CompanyID), "TaxID", "Description");
+            var product = new Product { CompanyID = user.CompanyID, };
+            return View(product);
         }
 
         // POST: Products/Create
@@ -50,19 +60,44 @@ namespace Ecommerce.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ProductID,CompanyID,Description,BarCode,CategoryID,TaxID,Price,Image,Remark")] Product product)
+        public ActionResult Create(Product product)
         {
             if (ModelState.IsValid)
             {
                 db.Products.Add(product);
                 db.SaveChanges();
+
+                if (product.ImageFile != null)
+                {
+
+                    var folder = "~/Content/products";
+                    var file = string.Format("{0}.jpg", product.ProductID);
+                    var response = FilesHelper.UploadPhoto(product.ImageFile, folder, file);
+                    if (response)
+                    {
+                        var pic = string.Format("{0}/{1}", folder, file);
+                        product.Image = pic;
+                        db.Entry(product).State = EntityState.Modified;
+                        db.SaveChanges();
+                    }
+                }
+
+             
                 return RedirectToAction("Index");
             }
 
-            ViewBag.CategoryID = new SelectList(db.Categories, "CategoryID", "Description", product.CategoryID);
-            ViewBag.CompanyID = new SelectList(db.Companies, "CompanyID", "Name", product.CompanyID);
+            User user = Users();
+
+            ViewBag.CategoryID = new SelectList(CombosHelper.GetCategories(user.CompanyID), "CategoryID", "Description", product.CategoryID);
             ViewBag.TaxID = new SelectList(db.Taxes, "TaxID", "Description", product.TaxID);
             return View(product);
+        }
+
+        private User Users()
+        {
+            return db.Users
+                .Where(u => u.UserName == User.Identity.Name.ToString())
+                .FirstOrDefault();
         }
 
         // GET: Products/Edit/5
@@ -72,13 +107,15 @@ namespace Ecommerce.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Product product = db.Products.Find(id);
+            var product = db.Products.Find(id);
             if (product == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.CategoryID = new SelectList(db.Categories, "CategoryID", "Description", product.CategoryID);
-            ViewBag.CompanyID = new SelectList(db.Companies, "CompanyID", "Name", product.CompanyID);
+
+            User user = Users();
+
+            ViewBag.CategoryID = new SelectList(CombosHelper.GetCategories(user.CompanyID), "CategoryID", "Description", product.CategoryID);
             ViewBag.TaxID = new SelectList(db.Taxes, "TaxID", "Description", product.TaxID);
             return View(product);
         }
@@ -88,16 +125,30 @@ namespace Ecommerce.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "ProductID,CompanyID,Description,BarCode,CategoryID,TaxID,Price,Image,Remark")] Product product)
+        public ActionResult Edit(Product product)
         {
             if (ModelState.IsValid)
             {
+                if (product.ImageFile != null)
+                {
+
+                    var folder = "~/Content/products";
+                    var file = string.Format("{0}.jpg", product.ProductID);
+                    var response = FilesHelper.UploadPhoto(product.ImageFile, folder, file);
+                    if (response)
+                    {
+                        var pic = string.Format("{0}/{1}", folder, file);
+                        product.Image = pic;
+                    }
+                }
+
                 db.Entry(product).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            ViewBag.CategoryID = new SelectList(db.Categories, "CategoryID", "Description", product.CategoryID);
-            ViewBag.CompanyID = new SelectList(db.Companies, "CompanyID", "Name", product.CompanyID);
+            User user = Users();
+
+            ViewBag.CategoryID = new SelectList(CombosHelper.GetCategories(user.CompanyID), "CategoryID", "Description", product.CategoryID);
             ViewBag.TaxID = new SelectList(db.Taxes, "TaxID", "Description", product.TaxID);
             return View(product);
         }
@@ -109,7 +160,7 @@ namespace Ecommerce.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Product product = db.Products.Find(id);
+            var product = db.Products.Find(id);
             if (product == null)
             {
                 return HttpNotFound();
@@ -122,7 +173,7 @@ namespace Ecommerce.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Product product = db.Products.Find(id);
+            var product = db.Products.Find(id);
             db.Products.Remove(product);
             db.SaveChanges();
             return RedirectToAction("Index");

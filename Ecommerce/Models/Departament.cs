@@ -28,5 +28,8 @@ namespace Ecommerce.Models
         //al declarar 1 departament (departament) en el sector de (n) Usuarios (Users)
         public virtual ICollection<User> Users { get; set; }
 
+        //al declarar 1 compania (company) en el sector de (n) WareHouse (Products)
+        public virtual ICollection<Warehouse> Warehouses { get; set; }
+
     }
 }
