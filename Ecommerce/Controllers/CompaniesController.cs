@@ -11,6 +11,7 @@ using Ecommerce.Classes;
 
 namespace Ecommerce.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class CompaniesController : Controller
     {
         private EcommerceContext db = new EcommerceContext();
@@ -64,10 +65,11 @@ namespace Ecommerce.Controllers
                     {
                         
                         var folder = "~/Content/logos";
-                        var response = FilesHelper.UploadPhoto(company.LogoFile, folder, string.Format("{0}.jpg", company.CompanyID));
+                        var file = string.Format("{0}.jpg", company.CompanyID);
+                        var response = FilesHelper.UploadPhoto(company.LogoFile, folder, file);
                         if (response)
                         {
-                            var pic = string.Format("{0}/{1}.jgp", folder, company.CompanyID);
+                            var pic = string.Format("{0}/{1}.jgp", folder, file);
                             company.Logo = pic;
                             db.Entry(company).State = EntityState.Modified;
                             db.SaveChanges();

@@ -11,6 +11,7 @@ using Ecommerce.Classes;
 
 namespace Ecommerce.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class UsersController : Controller
     {
         private EcommerceContext db = new EcommerceContext();
@@ -65,12 +66,11 @@ namespace Ecommerce.Controllers
                     {
 
                         var folder = "~/Content/users";
-                        var file = string.Format("{0}_{1}_{2}.jpg", user.FullName, user.Company, user.UserID);
+                        var file = string.Format("{0}_{1}.jpg", user.FullName, user.UserID);
                         var response = FilesHelper.UploadPhoto(user.PhotoFile, folder, file);
                         if (response)
                         {
-                            var pic = file;
-                            user.Photo = string.Format("{0}/{1}", folder, pic);
+                            user.Photo = string.Format("{0}/{1}", folder, file);
                             db.Entry(user).State = EntityState.Modified;
                             db.SaveChanges();
                         }
@@ -117,26 +117,28 @@ namespace Ecommerce.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(user).State = EntityState.Modified;
-                db.SaveChanges();
                 try
                 {
-                    db.Users.Add(user);
-                    db.SaveChanges();
                     if (user.PhotoFile != null)
                     {
 
                         var folder = "~/Content/users";
-                        var file = string.Format("{0}_{1}_{2}.jpg", user.FullName, user.Company, user.UserID);
+                        var file = string.Format("{0}_{1}.jpg", user.FullName, user.UserID);
                         var response = FilesHelper.UploadPhoto(user.PhotoFile, folder, file);
                         if (response)
                         {
-                            var pic = file;
-                            user.Photo = string.Format("{0}/{1}", folder, pic);
-                            db.Entry(user).State = EntityState.Modified;
-                            db.SaveChanges();
+                            user.Photo = string.Format("{0}/{1}", folder, file);
                         }
                     }
+                    var db2 = new EcommerceContext();
+                    var currentUser = db2.Users.Find(user.UserID);
+                    if (currentUser.UserName != user.UserName)
+                    {
+                        UsersHelper.UpdateUserName(currentUser.UserName, user.UserName);
+                    }
+                    db2.Dispose();
+                    db.Entry(user).State = EntityState.Modified;
+                    db.SaveChanges();
                     return RedirectToAction("Index");
                 }
                 catch (Exception ex)
@@ -158,7 +160,7 @@ namespace Ecommerce.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            User user = db.Users.Find(id);
+            var user = db.Users.Find(id);
             if (user == null)
             {
                 return HttpNotFound();
@@ -174,6 +176,7 @@ namespace Ecommerce.Controllers
             User user = db.Users.Find(id);
             db.Users.Remove(user);
             db.SaveChanges();
+            UsersHelper.DeleteUser(user.UserName);
             return RedirectToAction("Index");
         }
 

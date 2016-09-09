@@ -17,7 +17,33 @@ namespace Ecommerce.Classes
             private static ApplicationDbContext userContext = new ApplicationDbContext();
             private static EcommerceContext db = new EcommerceContext();
 
-            public static void CheckRole(string roleName)
+        public static bool DeleteUser(string UserName)
+        {
+            var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(userContext));
+            var userASP = userManager.FindByEmail(UserName);
+            if (userASP == null)
+            {
+                return false;
+            }
+            var Response = userManager.Delete(userASP);
+            return Response.Succeeded;
+        }
+
+        public static bool UpdateUserName(string CurrentUserName, string NewUserName) {
+            var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(userContext));
+            var userASP = userManager.FindByEmail(CurrentUserName);
+            if (userASP == null)
+            {
+                return false;
+            }
+            userASP.UserName = NewUserName;
+            userASP.Email = NewUserName;
+            var Response = userManager.Update(userASP);
+            return Response.Succeeded;
+        }
+
+
+        public static void CheckRole(string roleName)
             {
                 var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(userContext));
 
