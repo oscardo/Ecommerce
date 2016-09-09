@@ -7,20 +7,29 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using Ecommerce.Models;
+using Ecommerce.Classes;
 
 namespace Ecommerce.Controllers
 {
+    [Authorize(Roles = "User")]
     public class WarehousesController : Controller
     {
         private EcommerceContext db = new EcommerceContext();
 
+        //[Authorize(Roles = "User")]
         // GET: Warehouses
         public ActionResult Index()
         {
-            var warehouses = db.Warehouses.Include(w => w.City).Include(w => w.Company).Include(w => w.Departament);
+            var user = db.Users
+                .Where(u => u.UserName == User.Identity.Name.ToString())
+                .FirstOrDefault();
+            var warehouses = db.Warehouses.Include(w => w.City)
+                .Include(w => w.Departament)
+                .Where(w => w.CompanyID == user.CompanyID);
             return View(warehouses.ToList());
         }
 
+        //[Authorize(Roles = "User")]
         // GET: Warehouses/Details/5
         public ActionResult Details(int? id)
         {
@@ -28,7 +37,7 @@ namespace Ecommerce.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Warehouse warehouse = db.Warehouses.Find(id);
+            var warehouse = db.Warehouses.Find(id);
             if (warehouse == null)
             {
                 return HttpNotFound();
@@ -36,13 +45,19 @@ namespace Ecommerce.Controllers
             return View(warehouse);
         }
 
+        //[Authorize(Roles = "Admin")]
         // GET: Warehouses/Create
         public ActionResult Create()
         {
-            ViewBag.CityID = new SelectList(db.Cities, "CityID", "Name");
-            ViewBag.CompanyID = new SelectList(db.Companies, "CompanyID", "Name");
-            ViewBag.DepartamentID = new SelectList(db.Departaments, "DepartamentID", "Name");
-            return View();
+            ViewBag.CityID = new SelectList(CombosHelper.GetCities(), "CityID", "Name");
+            ViewBag.DepartamentID = new SelectList(CombosHelper.GetDepartament(), "DepartamentID", "Name");
+
+            var user = db.Users
+                .Where(u => u.UserName == User.Identity.Name.ToString())
+                .FirstOrDefault();
+            var warehouse = new Warehouse { CompanyID = user.CompanyID, };
+
+            return View(warehouse);
         }
 
         // POST: Warehouses/Create
@@ -50,7 +65,7 @@ namespace Ecommerce.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "WarehouseID,CompanyID,Name,Phone,Address,DepartamentID,CityID")] Warehouse warehouse)
+        public ActionResult Create(Warehouse warehouse)
         {
             if (ModelState.IsValid)
             {
@@ -59,12 +74,12 @@ namespace Ecommerce.Controllers
                 return RedirectToAction("Index");
             }
 
-            ViewBag.CityID = new SelectList(db.Cities, "CityID", "Name", warehouse.CityID);
-            ViewBag.CompanyID = new SelectList(db.Companies, "CompanyID", "Name", warehouse.CompanyID);
-            ViewBag.DepartamentID = new SelectList(db.Departaments, "DepartamentID", "Name", warehouse.DepartamentID);
+            ViewBag.CityID = new SelectList(CombosHelper.GetCities(), "CityID", "Name", warehouse.CityID);
+            ViewBag.DepartamentID = new SelectList(CombosHelper.GetDepartament(), "DepartamentID", "Name", warehouse.DepartamentID);
             return View(warehouse);
         }
 
+        //[Authorize(Roles = "Admin")]
         // GET: Warehouses/Edit/5
         public ActionResult Edit(int? id)
         {
@@ -77,9 +92,9 @@ namespace Ecommerce.Controllers
             {
                 return HttpNotFound();
             }
-            ViewBag.CityID = new SelectList(db.Cities, "CityID", "Name", warehouse.CityID);
-            ViewBag.CompanyID = new SelectList(db.Companies, "CompanyID", "Name", warehouse.CompanyID);
-            ViewBag.DepartamentID = new SelectList(db.Departaments, "DepartamentID", "Name", warehouse.DepartamentID);
+            ViewBag.CityID = new SelectList(CombosHelper.GetCities(), "CityID", "Name", warehouse.CityID);
+            ViewBag.DepartamentID = new SelectList(CombosHelper.GetDepartament(), "DepartamentID", "Name", warehouse.DepartamentID);
+
             return View(warehouse);
         }
 
@@ -88,7 +103,7 @@ namespace Ecommerce.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "WarehouseID,CompanyID,Name,Phone,Address,DepartamentID,CityID")] Warehouse warehouse)
+        public ActionResult Edit(Warehouse warehouse)
         {
             if (ModelState.IsValid)
             {
@@ -96,12 +111,12 @@ namespace Ecommerce.Controllers
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            ViewBag.CityID = new SelectList(db.Cities, "CityID", "Name", warehouse.CityID);
-            ViewBag.CompanyID = new SelectList(db.Companies, "CompanyID", "Name", warehouse.CompanyID);
-            ViewBag.DepartamentID = new SelectList(db.Departaments, "DepartamentID", "Name", warehouse.DepartamentID);
+            ViewBag.CityID = new SelectList(CombosHelper.GetCities(), "CityID", "Name", warehouse.CityID);
+            ViewBag.DepartamentID = new SelectList(CombosHelper.GetDepartament(), "DepartamentID", "Name", warehouse.DepartamentID);
             return View(warehouse);
         }
 
+        //[Authorize(Roles = "Admin")]
         // GET: Warehouses/Delete/5
         public ActionResult Delete(int? id)
         {
@@ -109,7 +124,7 @@ namespace Ecommerce.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Warehouse warehouse = db.Warehouses.Find(id);
+            var warehouse = db.Warehouses.Find(id);
             if (warehouse == null)
             {
                 return HttpNotFound();
