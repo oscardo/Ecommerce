@@ -25,7 +25,6 @@ namespace Ecommerce.Models
         public string Description { get; set; }
         
         public virtual Company Company { get; set; }
-
-
+        
     }
 }

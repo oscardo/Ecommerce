@@ -30,5 +30,7 @@ namespace Ecommerce.Models
         public System.Data.Entity.DbSet<Ecommerce.Models.User> Users { get; set; }
 
         public System.Data.Entity.DbSet<Ecommerce.Models.Category> Categories { get; set; }
+
+        public System.Data.Entity.DbSet<Ecommerce.Models.Tax> Taxes { get; set; }
     }
 }
