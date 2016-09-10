@@ -35,5 +35,7 @@ namespace Ecommerce.Models
         //al declarar 1 City (City) en el sector de (n) WareHouse (Products)
         public virtual ICollection<Warehouse> Warehouses { get; set; }
 
+        //al declarar 1 City (City) en el sector de (n) Customer (Customers)
+        public virtual ICollection<Customer> Customers { get; set; }
     }
 }

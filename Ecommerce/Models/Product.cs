@@ -61,6 +61,14 @@ namespace Ecommerce.Models
         [MaxLength(800, ErrorMessage = "The field {0} must be maximum {1} Character length")]
         public string Remark { get; set; }
 
+        [DisplayFormat(DataFormatString = "{0:N2}", ApplyFormatInEditMode = false)]
+        public double Stock
+        { get
+            {
+                return Inventories.Sum(i => i.Stock);
+            }
+        }
+
         //una compania para (n) n'umero Product
         public virtual Company Company { get; set; }
 
@@ -69,6 +77,9 @@ namespace Ecommerce.Models
 
         //un tax para (n) n'umero Product
         public virtual Tax Tax { get; set; }
+
+        //muchos productos pueden tener un solo inventario
+        public virtual ICollection<Inventory> Inventories { get; set; }
 
     }
 }

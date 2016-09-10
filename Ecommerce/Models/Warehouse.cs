@@ -50,5 +50,8 @@ namespace Ecommerce.Models
         //lado varios de User : (n) WareHouse -> Company (1)
         public virtual Company Company { get; set; }
 
+        //muchos warehouse pueden tener un solo inventario
+        public virtual ICollection<Inventory> Inventories { get; set; }
+
     }
 }
