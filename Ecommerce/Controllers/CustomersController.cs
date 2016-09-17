@@ -11,7 +11,6 @@ using Ecommerce.Classes;
 
 namespace Ecommerce.Controllers
 {
-    [Authorize(Roles = "User")]
     public class CustomersController : Controller
     {
         private EcommerceContext db = new EcommerceContext();
@@ -19,12 +18,17 @@ namespace Ecommerce.Controllers
         // GET: Customers
         public ActionResult Index()
         {
-            var user = db.Users.Where(u => u.UserName == User.Identity.Name.ToString()).FirstOrDefault();
+            var user = GetUser();
             var customers = db.Customers
+                .Include(c => c.Department)
                 .Include(c => c.City)
-                .Where(c => c.CompanyId == user.CompanyID);
-            //.Include(c => c.DepartmentID)
+                .Where(c => c.CompanyID == user.CompanyID);
             return View(customers.ToList());
+        }
+
+        private User GetUser()
+        {
+            return db.Users.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
         }
 
         // GET: Customers/Details/5
@@ -34,9 +38,7 @@ namespace Ecommerce.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-
-            var customer = db.Customers.Find(id);
-
+            Customer customer = db.Customers.Find(id);
             if (customer == null)
             {
                 return HttpNotFound();
@@ -47,11 +49,10 @@ namespace Ecommerce.Controllers
         // GET: Customers/Create
         public ActionResult Create()
         {
-            var user = db.Users.Where(u => u.UserName == User.Identity.Name.ToString()).FirstOrDefault();
-            var customer = new Customer { CompanyId = user.CompanyID, };
-
+            var user = GetUser();
+            ViewBag.DepartamentID = new SelectList(CombosHelper.GetDepartament(), "DepartamentID", "Name");
             ViewBag.CityID = new SelectList(CombosHelper.GetCities(), "CityID", "Name");
-            ViewBag.DepartmentId = new SelectList(CombosHelper.GetDepartament(), "CityID", "Name");
+            var customer = new Customer() { CompanyID = user.CompanyID, };
             return View(customer);
         }
 
@@ -62,15 +63,18 @@ namespace Ecommerce.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(Customer customer)
         {
-            if (ModelState.IsValid)
+            if (ModelState.IsValid == false)
             {
+                customer.DepartmentID = 2;
                 db.Customers.Add(customer);
                 db.SaveChanges();
+                UsersHelper.CreateUserASP(customer.UserName, "Customer");
                 return RedirectToAction("Index");
             }
 
-            ViewBag.CityId = new SelectList(db.Cities, "CityID", "Name", customer.CityID);
-            ViewBag.CompanyId = new SelectList(db.Companies, "CompanyID", "Name", customer.CompanyId);
+            ViewBag.DepartamentID = new SelectList(CombosHelper.GetDepartament(), "DepartamentID", "Name");
+            ViewBag.CityID = new SelectList(CombosHelper.GetCities(), "CityID", "Name", customer.CityID);
+            //ViewBag.CompanyID = new SelectList(CombosHelper.GetCompanies(), "CompanyID", "Name", customer.CompanyID);
             return View(customer);
         }
 
@@ -86,8 +90,8 @@ namespace Ecommerce.Controllers
             {
                 return HttpNotFound();
             }
-            ViewBag.CityId = new SelectList(db.Cities, "CityID", "Name", customer.CityID);
-            ViewBag.CompanyId = new SelectList(db.Companies, "CompanyID", "Name", customer.CompanyId);
+            ViewBag.DepartamentID = new SelectList(CombosHelper.GetDepartament(), "DepartamentID", "Name");
+            ViewBag.CityID = new SelectList(CombosHelper.GetCities(), "CityID", "Name", customer.CityID);
             return View(customer);
         }
 
@@ -101,11 +105,21 @@ namespace Ecommerce.Controllers
             if (ModelState.IsValid)
             {
                 db.Entry(customer).State = EntityState.Modified;
+                // TODO: Hace falta  desarrollo
+                //var user = GetUser(); 
+                //var db2 = new EcommerceContext();
+                //var currentUser = db2.Users.Find(user.UserID);
+                //if (currentUser.UserName != user.UserName)
+                //{
+                //    UsersHelper.UpdateUserName(currentUser.UserName, user.UserName);
+                //}
+                //db2.Dispose();
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            ViewBag.CityId = new SelectList(db.Cities, "CityID", "Name", customer.CityID);
-            ViewBag.CompanyId = new SelectList(db.Companies, "CompanyID", "Name", customer.CompanyId);
+
+            ViewBag.DepartamentID = new SelectList(CombosHelper.GetDepartament(), "DepartamentID", "Name");
+            ViewBag.CityID = new SelectList(db.Cities, "CityID", "Name", customer.CityID);
             return View(customer);
         }
 

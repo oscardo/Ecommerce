@@ -81,5 +81,11 @@ namespace Ecommerce.Models
         //muchos productos pueden tener un solo inventario
         public virtual ICollection<Inventory> Inventories { get; set; }
 
+        //muchos productos pueden tener un solo inventario
+        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
+
+        //muchos productos pueden tener un solo inventario
+        public virtual ICollection<OrderDetailTmp> OrderDetailTmps { get; set; }
+
     }
 }

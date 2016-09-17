@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web;
+using System.Collections;
 
 namespace Ecommerce.Classes
 {
@@ -53,6 +54,28 @@ namespace Ecommerce.Classes
                 Description = "[Select a Category]",
             });
             return categories.OrderBy(c => c.Description).ToList();
+        }
+
+        public static List<Customer> GetCustomers(int CompanyID)
+        {
+            var customer = db.Customers.Where(t => t.CompanyID == CompanyID).ToList();
+            customer.Add(new Customer
+            {
+                CustomerID = 0,
+                FirstName = "[Select a Customer]",
+            });
+            return customer.OrderBy(c => c.FirstName).ThenBy(c => c.LastName).ToList();
+        }
+
+        public static List<Product> GetProducts(int companyID)
+        {
+            var product = db.Products.Where(p => p.CompanyID == companyID).ToList();
+            product.Add(new Product
+            {
+                ProductID = 0,
+                Description = "[Select a Product]",
+            });
+            return product.OrderBy(p => p.Description).ToList();
         }
 
         public static List<Tax> GetTaxes(int? CompanyID)

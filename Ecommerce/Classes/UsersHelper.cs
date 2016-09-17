@@ -42,6 +42,17 @@ namespace Ecommerce.Classes
             return Response.Succeeded;
         }
 
+        public static bool UpdateUserNameCustomer(string CurrentUserName, string NewUserName)
+        {
+            var CustomerManager = new Customer();
+            var userASP = CustomerManager.UserName;
+            if (userASP == null)
+            {
+                return false;
+            }
+            //var Response = CustomerManager.Update(userASP);
+            return true; //Response.Succeeded;
+        }
 
         public static void CheckRole(string roleName)
             {

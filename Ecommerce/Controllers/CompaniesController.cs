@@ -19,7 +19,9 @@ namespace Ecommerce.Controllers
         // GET: Companies
         public ActionResult Index()
         {
-            var companies = db.Companies.Include(c => c.City).Include(c => c.Departament);
+            var companies = db.Companies
+                .Include(c => c.City)
+                .Include(c => c.Departament);
             return View(companies.ToList());
         }
 

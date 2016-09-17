@@ -64,5 +64,8 @@ namespace Ecommerce.Models
 
         //al declarar 1 Company (Company) en el sector de (n) Customer (Customers)
         public virtual ICollection<Customer> Customers { get; set; }
+
+        //al declarar 1 Company (Company) en el sector de (n) Customer (Customers)
+        public virtual ICollection<Order> Orders { get; set; }
     }
 }
