@@ -65,25 +65,31 @@ namespace Ecommerce.Controllers
             if (ModelState.IsValid)
             {
                 db.Products.Add(product);
-                db.SaveChanges();
 
-                if (product.ImageFile != null)
+                var response = DBHelper.SaveChanges(db);
+                if (response.Succeeded)
                 {
 
-                    var folder = "~/Content/products";
-                    var file = string.Format("{0}.jpg", product.ProductID);
-                    var response = FilesHelper.UploadPhoto(product.ImageFile, folder, file);
-                    if (response)
+                    if (product.ImageFile != null)
                     {
-                        var pic = string.Format("{0}/{1}", folder, file);
-                        product.Image = pic;
-                        db.Entry(product).State = EntityState.Modified;
-                        db.SaveChanges();
-                    }
-                }
+                        var folder = "~/Content/products";
+                        var file = string.Format("{0}.jpg", product.ProductID);
+                        var responseFile = FilesHelper.UploadPhoto(product.ImageFile, folder, file);
+                        if (responseFile)
+                        {
+                            var pic = string.Format("{0}/{1}", folder, file);
+                            product.Image = pic;
+                            db.Entry(product).State = EntityState.Modified;
+                            db.SaveChanges();
 
-             
-                return RedirectToAction("Index");
+                        }
+                    }
+
+
+                    return RedirectToAction("Index");
+                }
+                ModelState.AddModelError(string.Empty, response.Message);
+                
             }
 
             User user = Users();

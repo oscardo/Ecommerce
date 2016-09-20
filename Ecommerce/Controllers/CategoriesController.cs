@@ -7,6 +7,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using Ecommerce.Models;
+using Ecommerce.Classes;
 
 namespace Ecommerce.Controllers
 {
@@ -65,8 +66,12 @@ namespace Ecommerce.Controllers
             if (ModelState.IsValid)
             {
                 db.Categories.Add(category);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                var response = DBHelper.SaveChanges(db);
+                if (response.Succeeded)
+                {
+                    return RedirectToAction("Index");
+                }
+                ModelState.AddModelError(string.Empty, response.Message);
             }
             return View(category);
         }
@@ -101,8 +106,11 @@ namespace Ecommerce.Controllers
             if (ModelState.IsValid)
             {
                 db.Entry(category).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                var response = DBHelper.SaveChanges(db);
+                if (response.Succeeded) { 
+                 return RedirectToAction("Index");
+                }
+                ModelState.AddModelError(string.Empty, response.Message);
             }
             return View(category);
         }
@@ -129,8 +137,13 @@ namespace Ecommerce.Controllers
         {
             Category category = db.Categories.Find(id);
             db.Categories.Remove(category);
-            db.SaveChanges();
-            return RedirectToAction("Index");
+            var response = DBHelper.SaveChanges(db);
+            if (response.Succeeded)
+            {
+                return RedirectToAction("Index");
+            }
+            ModelState.AddModelError(string.Empty, response.Message);
+            return View(category);
         }
 
         protected override void Dispose(bool disposing)

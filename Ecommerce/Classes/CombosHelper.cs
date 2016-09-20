@@ -34,6 +34,19 @@ namespace Ecommerce.Classes
             return cities.OrderBy(d => d.Name).ToList();
         }
 
+        public static List<City> GetCities(int departmentId)
+        {
+            var cities = db.Cities.Where(c => c.DepartamentID == departmentId).ToList();
+            cities.Add(new City
+            {
+                CityID = 0,
+                Name = "[Select a city...]",
+            });
+
+            return cities.OrderBy(d => d.Name).ToList();
+        }
+
+
         public static List<Company> GetCompanies()
         {
             var companies = db.Companies.ToList();
@@ -76,6 +89,17 @@ namespace Ecommerce.Classes
                 Description = "[Select a Product]",
             });
             return product.OrderBy(p => p.Description).ToList();
+        }
+
+        public static List<State> GetStates()
+        {
+            var state = db.States.ToList();
+            state.Add(new State
+            {
+                StateId = 0,
+                Description = "[Select a State]",
+            });
+            return state.OrderBy(s => s.Description).ToList();
         }
 
         public static List<Tax> GetTaxes(int? CompanyID)

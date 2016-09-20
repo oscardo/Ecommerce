@@ -175,16 +175,6 @@ namespace Ecommerce.Controllers
             return View(company);
         }
 
-        //DropDownList -> cascate 
-        //Cundinamarca ---> (los Municipios de este departamento, nada mas)
-        public JsonResult GetCities(int departmentId)
-        {
-            db.Configuration.ProxyCreationEnabled = false;
-            var cities = db.Cities.Where(c => c.DepartamentID == departmentId);
-            return Json(cities);
-        }
-
-
         // POST: Companies/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]

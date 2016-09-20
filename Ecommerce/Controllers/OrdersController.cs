@@ -61,14 +61,73 @@ namespace Ecommerce.Controllers
                 Date = DateTime.Now,
                 Details = db.OrderDetailTmps.Where(ODT => ODT.UserName == User.Identity.Name).ToList()
             };
-            return View();
+            return View(view);
         }
+
+        public ActionResult DeleteProduct(int? id)
+        {
+            var user = GetUser();
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            var orderdetailtmps = db.OrderDetailTmps.Where(
+                odt => odt.UserName == user.UserName 
+                && odt.ProductID == id).FirstOrDefault();
+            if (orderdetailtmps == null)
+            {
+                return HttpNotFound();
+            }
+            db.OrderDetailTmps.Remove(orderdetailtmps);
+            db.SaveChanges();
+            return RedirectToAction("Create");
+        }
+
+
+        [HttpPost]
+        public ActionResult AddProduct(AddProductView view)
+        {
+            var user = GetUser();
+            if (ModelState.IsValid)
+            {
+                var orderDetailTmp = db.OrderDetailTmps.Where(
+                    odt => odt.UserName == user.UserName
+                    && odt.ProductID == view.ProductID).FirstOrDefault();
+                if(orderDetailTmp == null)
+                { 
+                var product = db.Products.Find(view.ProductID);
+
+                orderDetailTmp = new OrderDetailTmp
+                {
+                    Description = product.Description,
+                    Price = product.Price,
+                    ProductID = product.ProductID,
+                    Quantity =  view.Quantity,
+                    TaxRate = product.Tax.Rate,                   
+                    UserName = User.Identity.Name,
+                };
+                db.OrderDetailTmps.Add(orderDetailTmp);
+                }
+                else
+                {
+                    orderDetailTmp.Quantity += view.Quantity;
+                    db.Entry(orderDetailTmp).State = EntityState.Modified;
+                }
+                db.SaveChanges();
+                return RedirectToAction("Create");
+            }
+
+            ViewBag.ProductID = new SelectList(CombosHelper.GetProducts(user.CompanyID), "ProductID", "Description");
+            return PartialView(view);
+        }
+
+
 
         public ActionResult AddProduct()
         {
             var user = GetUser();
             ViewBag.ProductID = new SelectList(CombosHelper.GetProducts(user.CompanyID), "ProductID", "Description");
-            return View();
+            return PartialView();
         }
 
 
@@ -77,23 +136,32 @@ namespace Ecommerce.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Order order)
+        public ActionResult Create(NewOrderView view)
         {
             if (ModelState.IsValid)
             {
-                db.Orders.Add(order);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                var response = MovementsHelper.NewOrder(view, User.Identity.Name);
+                if (response.Succeeded)
+                {
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, response.Message);
+                }
+                
             }
 
             var user = GetUser();
-            ViewBag.CustomerID = new SelectList(CombosHelper.GetCustomers(user.CompanyID), "CustomerID", "FullName", order.CustomerID);
-            return View(order);
+            ViewBag.CustomerID = new SelectList(CombosHelper.GetCustomers(user.CompanyID), "CustomerID", "FullName");
+            view.Details = db.OrderDetailTmps.Where(ODT => ODT.UserName == User.Identity.Name).ToList();
+            return View(view);
         }
 
         // GET: Orders/Edit/5
         public ActionResult Edit(int? id)
         {
+            var user = GetUser();
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
@@ -103,8 +171,9 @@ namespace Ecommerce.Controllers
             {
                 return HttpNotFound();
             }
-            ViewBag.CustomerID = new SelectList(db.Customers, "CustomerID", "UserName", order.CustomerID);
-            ViewBag.StateId = new SelectList(db.States, "StateId", "Description", order.StateId);
+
+            ViewBag.CustomerID = new SelectList(CombosHelper.GetCustomers(user.CompanyID), "CustomerID", "UserName", order.CustomerID);
+            ViewBag.StateId = new SelectList(CombosHelper.GetStates(), "StateId", "Description", order.StateId);
             return View(order);
         }
 
