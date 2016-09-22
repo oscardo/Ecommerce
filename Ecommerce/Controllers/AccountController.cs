@@ -17,6 +17,7 @@ namespace Ecommerce.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private EcommerceContext db = new EcommerceContext();
 
         public AccountController()
         {
@@ -27,6 +28,20 @@ namespace Ecommerce.Controllers
             UserManager = userManager;
             SignInManager = signInManager;
         }
+
+        public void Logo(LoginViewModel model)
+        {
+            var user = db.Users.Where(u => u.UserName == model.Email).FirstOrDefault();
+            if (user != null)
+            {
+                var company = db.Companies.Find(user.CompanyID);
+                if (company != null)
+                {
+                    Session["Logo"] = company.Logo;
+                }
+            }
+        }
+
 
         public ApplicationSignInManager SignInManager
         {
@@ -79,6 +94,7 @@ namespace Ecommerce.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
+                    Logo(model);
                     return RedirectToLocal(returnUrl);
                 case SignInStatus.LockedOut:
                     return View("Lockout");
@@ -392,6 +408,7 @@ namespace Ecommerce.Controllers
         public ActionResult LogOff()
         {
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+            Session["Logo"] = null;
             return RedirectToAction("Index", "Home");
         }
 
@@ -418,6 +435,7 @@ namespace Ecommerce.Controllers
                     _signInManager.Dispose();
                     _signInManager = null;
                 }
+                db.Dispose();
             }
 
             base.Dispose(disposing);

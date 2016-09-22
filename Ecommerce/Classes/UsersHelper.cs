@@ -17,7 +17,7 @@ namespace Ecommerce.Classes
             private static ApplicationDbContext userContext = new ApplicationDbContext();
             private static EcommerceContext db = new EcommerceContext();
 
-        public static bool DeleteUser(string UserName)
+        public static bool DeleteUser(string UserName, string RolName)
         {
             var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(userContext));
             var userASP = userManager.FindByEmail(UserName);
@@ -25,7 +25,7 @@ namespace Ecommerce.Classes
             {
                 return false;
             }
-            var Response = userManager.Delete(userASP);
+            var Response = userManager.RemoveFromRole(userASP.Id, RolName);
             return Response.Succeeded;
         }
 
@@ -79,19 +79,23 @@ namespace Ecommerce.Classes
 
                 userManager.AddToRole(userASP.Id, "Admin");
             }
+
             public static void CreateUserASP(string email, string roleName)
             {
                 var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(userContext));
-
-                var userASP = new ApplicationUser
-                {
-                    Email = email,
-                    UserName = email,
-                };
-
-                userManager.Create(userASP, email);
-                userManager.AddToRole(userASP.Id, roleName);
-            }
+                var userASP = userManager.FindByEmail(email);
+                if(userASP == null)
+                { 
+                        userASP = new ApplicationUser
+                        {
+                        Email = email,
+                        UserName = email,
+                        };
+                    userManager.Create(userASP, email);
+                 }//fin de UserASP == null
+            
+            userManager.AddToRole(userASP.Id, roleName);
+            }//fin de static void
 
             public static void CreateUserASP(string email, string roleName, string password)
             {

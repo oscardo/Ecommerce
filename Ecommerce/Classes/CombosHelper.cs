@@ -71,7 +71,19 @@ namespace Ecommerce.Classes
 
         public static List<Customer> GetCustomers(int CompanyID)
         {
-            var customer = db.Customers.Where(t => t.CompanyID == CompanyID).ToList();
+            //mucho ojo con las mayusculas y minusculas
+            var qry = (from cu in db.Customers
+                       join cc in db.CompanyCustomers on cu.CustomerID equals cc.CustomerID
+                       join co in db.Companies on cc.CompanyID equals co.CompanyID
+                       where co.CompanyID == CompanyID
+                       select new { cu }).ToList();
+            
+            var customer = new List<Customer>();
+            foreach (var item in qry)
+            {
+                customer.Add(item.cu);
+            }
+
             customer.Add(new Customer
             {
                 CustomerID = 0,
@@ -80,6 +92,12 @@ namespace Ecommerce.Classes
             return customer.OrderBy(c => c.FirstName).ThenBy(c => c.LastName).ToList();
         }
 
+        public static List<Product> GetProducts(int companyId, bool sw)
+        {
+            var products = db.Products.Where(p => p.CompanyID == companyId).ToList();
+            return products.OrderBy(p => p.Description).ToList();
+        }
+        
         public static List<Product> GetProducts(int companyID)
         {
             var product = db.Products.Where(p => p.CompanyID == companyID).ToList();

@@ -7,7 +7,7 @@ namespace Ecommerce.Models
 
         [Required(ErrorMessage = "The field {0} is required")]
         [Range(1, double.MaxValue, ErrorMessage = "You must select a {0}")]
-        [Display(Name = "Product")]
+        [Display(Name = "Product", Prompt = "[Select a product...]")]
         public int ProductID { get; set; }
 
         [Required(ErrorMessage = "The field {0} is required")]

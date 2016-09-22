@@ -125,10 +125,11 @@ namespace Ecommerce.Controllers
 
         public ActionResult AddProduct()
         {
-            var user = GetUser();
-            ViewBag.ProductID = new SelectList(CombosHelper.GetProducts(user.CompanyID), "ProductID", "Description");
+            var user = db.Users.Where(u => u.UserName == User.Identity.Name).FirstOrDefault();
+            ViewBag.ProductId = new SelectList(CombosHelper.GetProducts(user.CompanyID, false), "ProductId", "Description");
             return PartialView();
         }
+
 
 
         // POST: Orders/Create
